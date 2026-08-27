@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-sm border border-gray-100 mt-6 animate-fade-in">
+    <div class="mb-8 border-b border-gray-100 pb-4">
+        <h2 class="text-2xl font-display font-bold text-gray-900 tracking-tight">{% if object %}Editar Solicitação{% else %}Nova Solicitação{% endif %}</h2>
+        <p class="text-sm text-gray-500 mt-1">Preencha os dados do produtor e o serviço desejado.</p>
+    </div>
+    
+    <form method="post">
+        {% csrf_token %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {% for field in form %}
+            <div id="field_{{ field.name }}" class="{% if field.name == 'endereco' or field.name == 'descricao' %}md:col-span-2{% endif %} relative">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">{{ field.label }}</label>
+                {{ field }}
+                <p id="warning_{{ field.name }}" class="text-amber-600 text-xs mt-1.5 font-medium hidden flex items-center gap-1 absolute -bottom-5 left-0">
+                    <i class="bi bi-exclamation-triangle"></i> Caracteres inválidos bloqueados (apenas números).
+                </p>
+                {% if field.errors %}
+                <p class="text-brand-red text-sm mt-1.5 font-medium flex items-center gap-1"><i class="bi bi-exclamation-circle"></i> {{ field.errors.0 }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        <div class="mt-8 flex justify-end gap-3 pt-6 border-t border-gray-100">
+            <a href="{% url 'solicitacao_list' %}" class="px-6 py-2.5 rounded-full text-gray-700 font-semibold hover:bg-gray-100 transition-colors">Cancelar</a>
+            <button type="submit" class="bg-brand-blue text-white px-8 py-2.5 rounded-full shadow-md hover:bg-brand-dark transition-colors duration-300 font-semibold flex items-center gap-2">
+                <i class="bi bi-check-lg"></i> Salvar Solicitação
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const equipamentoSelect = document.querySelector('select[name="equipamento"]');
+        const servicoTratorDiv = document.getElementById('field_tipo_servico');
+
+        function toggleServicoTrator() {
+            if (equipamentoSelect.value === 'TRATOR') {
+                servicoTratorDiv.style.display = 'block';
+            } else {
+                servicoTratorDiv.style.display = 'none';
+                const servicoSelect = servicoTratorDiv.querySelector('select');
+                if(servicoSelect) servicoSelect.value = ''; // limpa o valor
+            }
+        }
+
+        if (equipamentoSelect && servicoTratorDiv) {
+            equipamentoSelect.addEventListener('change', toggleServicoTrator);
+            toggleServicoTrator(); // inicializa
+        }
+
+        // --- Sistema de Máscaras e Bloqueio de Letras ---
+        function showWarning(fieldName) {
+            const warningEl = document.getElementById('warning_' + fieldName);
+            if (warningEl) {
+                warningEl.classList.remove('hidden');
+                // Adiciona uma animação suave
+                warningEl.style.opacity = '1';
+                setTimeout(() => {
+                    warningEl.style.opacity = '0';
+                    setTimeout(() => warningEl.classList.add('hidden'), 300);
+                }, 2500);
+            }
+        }
+
+        function applyMask(input, fieldName, maskType) {
+            if (!input) return;
+            
+            input.addEventListener('input', function(e) {
+                const originalValue = this.value;
+                const hasLetters = /[a-zA-Z\s,;:]/.test(originalValue);
+                
+                if (hasLetters && e.inputType !== 'deleteContentBackward') {
+                    showWarning(fieldName);
+                }
+                
+                let val = originalValue.replace(/\D/g, ""); // Remove tudo que não é dígito
+                
+                if (maskType === 'cpf') {
+                    if (val.length > 11) val = val.substring(0, 11);
+                    if (val.length > 9) val = val.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, "$1.$2.$3-$4");
+                    else if (val.length > 6) val = val.replace(/(\d{3})(\d{3})(\d{1,3})/, "$1.$2.$3");
+                    else if (val.length > 3) val = val.replace(/(\d{3})(\d{1,3})/, "$1.$2");
+                } 
+                else if (maskType === 'telefone') {
+                    if (val.length > 11) val = val.substring(0, 11);
+                    if (val.length > 10) val = val.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
+                    else if (val.length > 6) val = val.replace(/(\d{2})(\d{4,5})(\d{0,4})/, "($1) $2-$3");
+                    else if (val.length > 2) val = val.replace(/(\d{2})(\d{1,5})/, "($1) $2");
+                    else if (val.length > 0) val = val.replace(/(\d{1,2})/, "($1");
+                }
+                
+                if (e.inputType !== 'deleteContentBackward' || hasLetters) {
+                    this.value = val;
+                }
+            });
+        }
+        
+        applyMask(document.querySelector('input[name="cpf"]'), 'cpf', 'cpf');
+        applyMask(document.querySelector('input[name="telefone"]'), 'telefone', 'telefone');
+    });
+</script>
+{% endblock %}

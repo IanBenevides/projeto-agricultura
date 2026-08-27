@@ -1,0 +1,160 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório Patrulha Agrícola</title>
+    <style>
+        @page {
+            size: a4 portrait;
+            margin: 1.5cm;
+            margin-top: 3.5cm;
+            margin-bottom: 2.5cm;
+            @frame header_frame {
+                -pdf-frame-content: header_content;
+                left: 1.5cm; right: 1.5cm; top: 1cm; height: 2.5cm;
+            }
+            @frame footer_frame {
+                -pdf-frame-content: footer_content;
+                left: 1.5cm; right: 1.5cm; bottom: 1cm; height: 1.5cm;
+            }
+        }
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 10pt;
+            color: #333333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #dddddd;
+            padding: 8px;
+            text-align: left;
+            word-wrap: break-word;
+            -pdf-word-wrap: CJK;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .header-title { font-size: 18pt; font-weight: bold; color: #0d6efd; margin-bottom: 5px;}
+        .header-subtitle { font-size: 12pt; color: #666666; }
+        .section-title { font-size: 14pt; font-weight: bold; margin-bottom: 15px; margin-top: 25px; border-bottom: 1px solid #ccc; padding-bottom: 5px; color: #222;}
+        .filter-info { margin-bottom: 25px; font-size: 10pt; background-color: #f9f9f9; padding: 12px; border: 1px solid #eee; }
+        
+        .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 9pt; font-weight: bold; display: inline-block;}
+        .status-CONCLUIDO { color: #155724; background-color: #d4edda; }
+        .status-PENDENTE { color: #856404; background-color: #fff3cd; }
+        .status-EM_ANDAMENTO { color: #004085; background-color: #cce5ff; }
+        .status-CANCELADO { color: #383d41; background-color: #e2e3e5; }
+        
+        .horas-box {
+            border: 1px solid #ddd;
+            padding: 15px;
+            text-align: center;
+            width: 45%;
+            display: inline-block;
+            margin-right: 2%;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Cabeçalho (Repete em todas as páginas) -->
+    <div id="header_content">
+        <table style="border: none; margin-bottom: 0;">
+            <tr>
+                <td style="border: none; width: 65%; text-align: left;">
+                    <div class="header-title">Prefeitura Municipal de Piraí</div>
+                    <div class="header-subtitle">Programa Patrulha Agrícola - Relatório Gerencial</div>
+                </td>
+                <td style="border: none; width: 35%; text-align: right; vertical-align: middle;">
+                    <img src="{{ logo_inovai }}" style="height: 35px; margin-right: 15px;">
+                    <img src="{{ logo_smcti }}" style="height: 35px;">
+                </td>
+            </tr>
+        </table>
+        <hr style="border: 0; border-top: 2px solid #0d6efd; margin-top: 10px;">
+    </div>
+
+    <!-- Rodapé (Repete em todas as páginas) -->
+    <div id="footer_content" style="text-align: right; font-size: 9pt; color: #777; border-top: 1px solid #ddd; padding-top: 5px;">
+        Emitido em: {{ data_emissao|date:"d/m/Y H:i" }} | Página <pdf:pagenumber> de <pdf:pagecount>
+    </div>
+
+    <!-- Conteúdo Principal -->
+    <div class="filter-info">
+        <strong>Filtros Aplicados:</strong><br>
+        <strong>Localidade:</strong> {% if selected_localidade %}{{ selected_localidade }}{% else %}Todas{% endif %}<br>
+        <strong>Período:</strong> 
+        {% if data_inicial_obj or data_final_obj %}
+            {% if data_inicial_obj %}{{ data_inicial_obj|date:"d/m/Y" }}{% else %}Início{% endif %} até 
+            {% if data_final_obj %}{{ data_final_obj|date:"d/m/Y" }}{% else %}Hoje{% endif %}
+        {% else %}
+            Todo o período
+        {% endif %}
+    </div>
+
+    <div class="section-title">Resumo Operacional</div>
+    <table style="border: none; margin-bottom: 30px;">
+        <tr>
+            <td style="border: none; padding: 0 10px 0 0; width: 50%;">
+                <div style="border: 1px solid #ddd; padding: 15px; text-align: center; background-color: #f8fff9;">
+                    <strong style="color: #666; font-size: 11pt; display: block; margin-bottom: 10px;">Horas Trabalhadas (Trator)</strong>
+                    <div style="font-size: 24pt; font-weight: bold; color: #28a745;">{{ horas_trator|default:"0" }}h</div>
+                </div>
+            </td>
+            <td style="border: none; padding: 0 0 0 10px; width: 50%;">
+                <div style="border: 1px solid #ddd; padding: 15px; text-align: center; background-color: #f8fbff;">
+                    <strong style="color: #666; font-size: 11pt; display: block; margin-bottom: 10px;">Horas Trabalhadas (Retroescavadeira)</strong>
+                    <div style="font-size: 24pt; font-weight: bold; color: #0d6efd;">{{ horas_retro|default:"0" }}h</div>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <div class="section-title">Listagem de Solicitações</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Produtor</th>
+                <th>Localidade</th>
+                <th>Equipamento</th>
+                <th>Data</th>
+                <th style="text-align: center;">Horas</th>
+                <th style="text-align: center;">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in solicitantes %}
+            <tr>
+                <td>{{ s.nome_produtor }}</td>
+                <td>{{ s.localidade }}</td>
+                <td>{{ s.get_equipamento_display }}</td>
+                <td>{{ s.data_solicitacao|date:"d/m/Y" }}</td>
+                <td class="text-center">
+                    {% if s.atendimento %}
+                        {{ s.atendimento.horas_trabalhadas }}h
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td class="text-center">
+                    <span class="status-badge status-{{ s.status }}">{{ s.get_status_display }}</span>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center">Nenhum registro encontrado para os filtros selecionados.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</body>
+</html>

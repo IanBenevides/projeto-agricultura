@@ -1,0 +1,23 @@
+{% load static %}
+<nav class="bg-brand-blue shadow-lg z-50 relative sticky top-0">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-20">
+            <a href="{% url 'solicitacao_list' %}" class="flex items-center gap-4 hover:opacity-80 transition-opacity cursor-pointer">
+                <div class="flex-shrink-0">
+                    <img src="{% static 'image/logo_prefeitura_2021.png' %}" alt="Prefeitura de Piraí" class="h-12 w-auto brightness-0 invert">
+                </div>
+                <div class="text-white font-display font-bold text-2xl tracking-tight border-l border-white/20 pl-4">
+                    Patrulha Agrícola
+                </div>
+            </a>
+            <div class="hidden md:flex space-x-2">
+                <a href="{% url 'solicitacao_list' %}" class="text-white hover:bg-brand-dark px-4 py-2 rounded-full text-sm font-semibold transition-colors duration-300">
+                    <i class="bi bi-card-list mr-1"></i> Solicitações
+                </a>
+                <a href="{% url 'relatorio' %}" class="text-white hover:bg-brand-dark px-4 py-2 rounded-full text-sm font-semibold transition-colors duration-300">
+                    <i class="bi bi-bar-chart mr-1"></i> Relatório
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
