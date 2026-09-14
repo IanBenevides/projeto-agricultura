@@ -39,12 +39,38 @@
         const servicoTratorDiv = document.getElementById('field_tipo_servico');
 
         function toggleServicoTrator() {
-            if (equipamentoSelect.value === 'TRATOR') {
+            const equipamento = equipamentoSelect.value;
+            const servicoSelect = servicoTratorDiv.querySelector('select');
+            
+            if (equipamento === 'TRATOR' || equipamento === 'RETROESCAVADEIRA') {
                 servicoTratorDiv.style.display = 'block';
+                
+                if (servicoSelect) {
+                    servicoSelect.required = true;
+                    const optgroups = servicoSelect.querySelectorAll('optgroup');
+                    optgroups.forEach(group => {
+                        if (equipamento === 'TRATOR' && group.label === 'Trator') {
+                            group.style.display = 'block';
+                        } else if (equipamento === 'RETROESCAVADEIRA' && group.label === 'Retroescavadeira') {
+                            group.style.display = 'block';
+                        } else {
+                            group.style.display = 'none';
+                        }
+                    });
+
+                    // Limpa o valor selecionado se não for compatível
+                    if (servicoSelect.value && 
+                        ((equipamento === 'TRATOR' && !servicoSelect.value.startsWith('TRATOR_')) || 
+                         (equipamento === 'RETROESCAVADEIRA' && !servicoSelect.value.startsWith('RETRO_')))) {
+                        servicoSelect.value = '';
+                    }
+                }
             } else {
                 servicoTratorDiv.style.display = 'none';
-                const servicoSelect = servicoTratorDiv.querySelector('select');
-                if(servicoSelect) servicoSelect.value = ''; // limpa o valor
+                if(servicoSelect) {
+                    servicoSelect.value = ''; // limpa o valor
+                    servicoSelect.required = false;
+                }
             }
         }
 

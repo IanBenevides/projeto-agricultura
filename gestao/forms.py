@@ -32,6 +32,24 @@ class SolicitacaoForm(TailwindFormMixin, forms.ModelForm):
         model = Solicitacao
         fields = ['nome_produtor', 'cpf', 'endereco', 'localidade', 'telefone', 'equipamento', 'tipo_servico', 'descricao']
         
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        for field_name in ['equipamento', 'tipo_servico']:
+            if field_name in self.fields:
+                field = self.fields[field_name]
+                # Traduzir o empty_label padrão do Django ('---------')
+                new_choices = [('', 'Selecione uma opção')] + [c for c in field.choices if c[0] != '']
+                field.choices = new_choices
+                
+                # Adicionar validação HTML5
+                field.required = True
+                field.widget.attrs.update({
+                    'required': 'required',
+                    'oninvalid': "this.setCustomValidity('Por favor, selecione uma opção.')",
+                    'onchange': "this.setCustomValidity('')"
+                })
+
     def clean_cpf(self):
         cpf = self.cleaned_data.get('cpf')
         if cpf:
@@ -49,18 +67,19 @@ class SolicitacaoForm(TailwindFormMixin, forms.ModelForm):
         equipamento = cleaned_data.get('equipamento')
         tipo_servico = cleaned_data.get('tipo_servico')
         
-        if equipamento == 'TRATOR' and not tipo_servico:
-            self.add_error('tipo_servico', 'Selecione o tipo de serviço para o trator.')
-        elif equipamento == 'RETROESCAVADEIRA':
-            # Se for retroescavadeira, não precisamos de tipo de serviço
-            cleaned_data['tipo_servico'] = None
+        if not tipo_servico:
+            self.add_error('tipo_servico', 'Selecione o tipo de serviço.')
+        elif equipamento == 'TRATOR' and not tipo_servico.startswith('TRATOR_'):
+            self.add_error('tipo_servico', 'Selecione um serviço válido para trator.')
+        elif equipamento == 'RETROESCAVADEIRA' and not tipo_servico.startswith('RETRO_'):
+            self.add_error('tipo_servico', 'Selecione um serviço válido para retroescavadeira.')
             
         return cleaned_data
 
 class AtendimentoForm(TailwindFormMixin, forms.ModelForm):
     class Meta:
         model = Atendimento
-        fields = ['data_atendimento', 'nome_operador', 'horas_trabalhadas', 'horimetro']
+        fields = ['data_atendimento', 'nome_operador', 'horas_trabalhadas', 'horimetro_inicial', 'horimetro_final', 'descricao']
         widgets = {
             'data_atendimento': forms.DateInput(attrs={'type': 'date'}),
         }
@@ -71,8 +90,19 @@ class AtendimentoForm(TailwindFormMixin, forms.ModelForm):
             raise forms.ValidationError("As horas trabalhadas devem ser maiores que zero.")
         return horas
 
-    def clean_horimetro(self):
-        horimetro = self.cleaned_data.get('horimetro')
-        if horimetro is not None and horimetro < 0:
-            raise forms.ValidationError("A marcação do horímetro não pode ser negativa.")
-        return horimetro
+    def clean(self):
+        cleaned_data = super().clean()
+        horimetro_inicial = cleaned_data.get('horimetro_inicial')
+        horimetro_final = cleaned_data.get('horimetro_final')
+
+        if horimetro_inicial is not None and horimetro_inicial < 0:
+            self.add_error('horimetro_inicial', "A marcação inicial não pode ser negativa.")
+        
+        if horimetro_final is not None and horimetro_final < 0:
+            self.add_error('horimetro_final', "A marcação final não pode ser negativa.")
+            
+        if horimetro_inicial is not None and horimetro_final is not None:
+            if horimetro_final < horimetro_inicial:
+                self.add_error('horimetro_final', "A marcação final não pode ser menor que a inicial.")
+
+        return cleaned_data
