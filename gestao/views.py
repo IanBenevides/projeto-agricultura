@@ -1,11 +1,13 @@
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView, TemplateView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from django.db.models import Sum, Count
 from .models import Solicitacao, Atendimento
 from .forms import SolicitacaoForm, AtendimentoForm
 
-class SolicitacaoListView(ListView):
+class SolicitacaoListView(LoginRequiredMixin, ListView):
     model = Solicitacao
     template_name = 'gestao/solicitacao_list.html'
     context_object_name = 'solicitacoes'
@@ -20,19 +22,19 @@ class SolicitacaoListView(ListView):
             queryset = queryset.filter(status=status)
         return queryset
 
-class SolicitacaoCreateView(CreateView):
+class SolicitacaoCreateView(LoginRequiredMixin, CreateView):
     model = Solicitacao
     form_class = SolicitacaoForm
     template_name = 'gestao/solicitacao_form.html'
     success_url = reverse_lazy('solicitacao_list')
 
-class SolicitacaoUpdateView(UpdateView):
+class SolicitacaoUpdateView(LoginRequiredMixin, UpdateView):
     model = Solicitacao
     form_class = SolicitacaoForm
     template_name = 'gestao/solicitacao_form.html'
     success_url = reverse_lazy('solicitacao_list')
 
-class AtendimentoCreateView(CreateView):
+class AtendimentoCreateView(LoginRequiredMixin, CreateView):
     model = Atendimento
     form_class = AtendimentoForm
     template_name = 'gestao/atendimento_form.html'
@@ -106,7 +108,7 @@ def get_relatorio_context(request):
     context['demandas_localidade'] = demandas_localidade
     return context
 
-class RelatorioGerencialView(TemplateView):
+class RelatorioGerencialView(LoginRequiredMixin, TemplateView):
     template_name = 'gestao/relatorio.html'
 
     def get_context_data(self, **kwargs):
@@ -123,6 +125,7 @@ def get_file_uri(filename):
     forward_slash_path = str(full_path).replace('\\', '/')
     return f"file:///{forward_slash_path}"
 
+@login_required
 def exportar_relatorio_pdf(request):
     template_path = 'gestao/relatorio_pdf.html'
     context = get_relatorio_context(request)

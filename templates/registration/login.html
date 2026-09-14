@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-md mx-auto mt-10">
+    <div class="bg-white p-8 rounded-lg shadow-md border border-gray-100">
+        <h2 class="text-2xl font-display font-bold text-center text-gray-900 mb-8">Acesso ao Sistema</h2>
+        
+        {% if form.errors %}
+            <div class="bg-red-50 border-l-4 border-brand-red p-4 mb-6">
+                <p class="text-sm text-red-700">Seu usuário ou senha estão incorretos. Tente novamente.</p>
+            </div>
+        {% endif %}
+
+        {% if next %}
+            {% if user.is_authenticated %}
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+                    <p class="text-sm text-yellow-700">Sua conta não tem acesso a esta página. Para prosseguir, faça login com uma conta que tenha privilégios.</p>
+                </div>
+            {% else %}
+                <div class="bg-blue-50 border-l-4 border-brand-blue p-4 mb-6">
+                    <p class="text-sm text-blue-700">Por favor, faça login para acessar esta página.</p>
+                </div>
+            {% endif %}
+        {% endif %}
+
+        <form method="post" action="{% url 'login' %}">
+            {% csrf_token %}
+            
+            <div class="mb-5">
+                <label for="id_username" class="block text-sm font-medium text-gray-700 mb-1">Usuário</label>
+                <input type="text" name="username" id="id_username" class="w-full rounded-md border-gray-300 shadow-sm focus:border-brand-blue focus:ring-brand-blue sm:text-sm p-2 border" required autofocus>
+            </div>
+            
+            <div class="mb-6">
+                <label for="id_password" class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
+                <input type="password" name="password" id="id_password" class="w-full rounded-md border-gray-300 shadow-sm focus:border-brand-blue focus:ring-brand-blue sm:text-sm p-2 border" required>
+            </div>
+            
+            <button type="submit" class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-brand-blue hover:bg-brand-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-blue transition-colors duration-200">
+                Entrar
+            </button>
+            <input type="hidden" name="next" value="{{ next }}">
+        </form>
+    </div>
+</div>
+{% endblock %}

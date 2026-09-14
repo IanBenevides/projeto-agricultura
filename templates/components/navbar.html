@@ -10,14 +10,24 @@
                     Patrulha Agrícola
                 </div>
             </a>
-            <div class="hidden md:flex space-x-2">
+            
+            {% if user.is_authenticated %}
+            <div class="hidden md:flex items-center space-x-2">
                 <a href="{% url 'solicitacao_list' %}" class="text-white hover:bg-brand-dark px-4 py-2 rounded-full text-sm font-semibold transition-colors duration-300">
                     <i class="bi bi-card-list mr-1"></i> Solicitações
                 </a>
-                <a href="{% url 'relatorio' %}" class="text-white hover:bg-brand-dark px-4 py-2 rounded-full text-sm font-semibold transition-colors duration-300">
+                <a href="{% url 'relatorio' %}" class="text-white hover:bg-brand-dark px-4 py-2 rounded-full text-sm font-semibold transition-colors duration-300 mr-4">
                     <i class="bi bi-bar-chart mr-1"></i> Relatório
                 </a>
+                
+                <form method="post" action="{% url 'logout' %}" class="inline-block border-l border-white/20 pl-4">
+                    {% csrf_token %}
+                    <button type="submit" class="text-white hover:text-red-200 hover:bg-brand-dark px-4 py-2 rounded-full text-sm font-semibold transition-colors duration-300 flex items-center">
+                        <i class="bi bi-box-arrow-right mr-1"></i> Sair
+                    </button>
+                </form>
             </div>
+            {% endif %}
         </div>
     </div>
 </nav>
