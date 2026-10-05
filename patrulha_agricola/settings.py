@@ -36,11 +36,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'pirai_theme',
+    'mozilla_django_oidc',
     'gestao',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -116,6 +119,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 
 # Email
@@ -127,5 +131,24 @@ MAILERS = {
     },
 }
 
+import os
+
+SSO_URL = os.environ.get('SSO_SERVER_URL', 'http://localhost:8080')
+
+AUTHENTICATION_BACKENDS = (
+    'pirai_auth.backends.KeycloakRoleBackend',
+    'django.contrib.auth.backends.ModelBackend',
+)
+
+OIDC_RP_CLIENT_ID = os.environ.get('OIDC_CLIENT_ID', 'agricultura')
+OIDC_RP_CLIENT_SECRET = os.environ.get('OIDC_CLIENT_SECRET', 'sua-chave-secreta-aqui')
+OIDC_OP_AUTHORIZATION_ENDPOINT = f"{SSO_URL}/realms/pirai/protocol/openid-connect/auth"
+OIDC_OP_TOKEN_ENDPOINT = f"{SSO_URL}/realms/pirai/protocol/openid-connect/token"
+OIDC_OP_USER_ENDPOINT = f"{SSO_URL}/realms/pirai/protocol/openid-connect/userinfo"
+OIDC_OP_JWKS_ENDPOINT = f"{SSO_URL}/realms/pirai/protocol/openid-connect/certs"
+
+OIDC_RP_SIGN_ALGO = 'RS256'
+OIDC_CREATE_USER = True
+LOGIN_URL = 'oidc_authentication_init'
 LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/accounts/login/'
+LOGOUT_REDIRECT_URL = '/'

@@ -1,58 +1,60 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Patrulha Agrícola - Portal Piraí</title>
-    
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+{% extends "pirai_theme/base.html" %}
 
-    <!-- Tailwind CSS (via script for dynamic configuration without build step) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['ui-sans-serif', 'system-ui', 'sans-serif'],
-                        display: ['Outfit', 'sans-serif'],
-                    },
-                    colors: {
-                        brand: {
-                            blue: '#0d6efd',
-                            dark: '#0a58ca',
-                            red: '#fd0e6f',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-</head>
-<body class="bg-gray-50 text-gray-900 font-sans antialiased min-h-screen flex flex-col transition-colors duration-300">
-    {% include 'components/navbar.html' %}
-    
-    <main class="flex-grow w-full max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
-        {% block content %}{% endblock %}
-    </main>
-    
-    <footer class="bg-gray-900 text-white py-8 mt-12">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8">
-            <p class="font-display font-medium text-sm text-center md:text-left text-gray-300">&copy; 2026 Prefeitura Municipal de Piraí. Todos os direitos reservados.</p>
-            <div class="flex items-center justify-center gap-8">
-                <img src="{% static 'image/inovailogo-removebg-preview.png' %}" alt="Inovaí" class="h-8 object-contain opacity-90 hover:opacity-100 transition-opacity" style="filter: brightness(0) invert(1);">
-                <img src="{% static 'image/logosmcti-removebg-preview.png' %}" alt="SMCTI" class="h-8 object-contain opacity-90 hover:opacity-100 transition-opacity" style="filter: brightness(0) invert(1);">
-            </div>
-        </div>
-    </footer>
+{% block title %}Patrulha Agrícola - Piraí{% endblock %}
 
-    {% block scripts %}{% endblock %}
-</body>
-</html>
+{% block system_badge %}
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-caption font-semibold bg-secondary-100 text-secondary-800 border border-secondary-200 shadow-xs">
+  <span class="material-symbols-outlined text-sm text-secondary-600">agriculture</span>
+  <span>Patrulha Agrícola</span>
+</span>
+{% endblock system_badge %}
+
+{% block sidebar_links %}
+<!-- Bloco de Ação Rápida -->
+{% if user.is_authenticated %}
+<div>
+    <a href="{% url 'solicitacao_create' %}" class="w-full inline-flex items-center justify-center gap-2 px-3.5 py-2.5 font-bold text-white text-body-sm bg-secondary-600 hover:bg-secondary-700 active:scale-[0.98] rounded-base shadow-subtle transition-all duration-fast focus-visible">
+        <span class="material-symbols-outlined text-lg">add_circle</span>
+        <span>Nova Solicitação</span>
+    </a>
+</div>
+{% endif %}
+
+<div>
+    <p class="px-3 text-caption font-bold text-neutral-400 uppercase tracking-wider mb-2">Visão Geral</p>
+    <nav class="space-y-1">
+        <a href="{% url 'dashboard' %}" class="flex items-center gap-3 px-3 py-2 text-body-sm font-medium rounded-base transition-colors duration-fast focus-visible {% if request.path == '/' %}bg-primary-50 text-primary-700 font-bold border-l-4 border-primary-600 shadow-xs{% else %}text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900{% endif %}">
+            <span class="material-symbols-outlined text-xl {% if request.path == '/' %}text-primary-600 fill{% else %}text-neutral-400{% endif %}">dashboard</span>
+            <span>Dashboard</span>
+        </a>
+        <a href="{% url 'solicitacao_list' %}" class="flex items-center gap-3 px-3 py-2 text-body-sm font-medium rounded-base transition-colors duration-fast focus-visible {% if '/solicitacoes/' in request.path %}bg-primary-50 text-primary-700 font-bold border-l-4 border-primary-600 shadow-xs{% else %}text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900{% endif %}">
+            <span class="material-symbols-outlined text-xl {% if '/solicitacoes/' in request.path %}text-primary-600 fill{% else %}text-neutral-400{% endif %}">list_alt</span>
+            <span>Solicitações</span>
+        </a>
+    </nav>
+</div>
+
+<div>
+    <p class="px-3 text-caption font-bold text-neutral-400 uppercase tracking-wider mb-2">Módulos</p>
+    <nav class="space-y-1">
+        <a href="{% url 'relatorio' %}" class="flex items-center gap-3 px-3 py-2 text-body-sm font-medium rounded-base transition-colors duration-fast focus-visible {% if '/relatorio/' in request.path %}bg-primary-50 text-primary-700 font-bold border-l-4 border-primary-600 shadow-xs{% else %}text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900{% endif %}">
+            <span class="material-symbols-outlined text-xl {% if '/relatorio/' in request.path %}text-primary-600 fill{% else %}text-neutral-400{% endif %}">bar_chart</span>
+            <span>Relatórios</span>
+        </a>
+    </nav>
+</div>
+
+<div>
+    <p class="px-3 text-caption font-bold text-neutral-400 uppercase tracking-wider mb-2">Outros Sistemas</p>
+    <nav class="space-y-1">
+        <a href="http://procon.localhost" class="flex items-center gap-3 px-3 py-2 text-body-sm font-medium rounded-base text-neutral-600 hover:bg-secondary-50 hover:text-secondary-800 transition-colors duration-fast focus-visible">
+            <span class="material-symbols-outlined text-xl text-secondary-600">verified_user</span>
+            <span>PROCON Piraí</span>
+        </a>
+        <a href="http://jazigo.localhost" class="flex items-center gap-3 px-3 py-2 text-body-sm font-medium rounded-base text-neutral-600 hover:bg-primary-50 hover:text-primary-800 transition-colors duration-fast focus-visible">
+            <span class="material-symbols-outlined text-xl text-primary-600">church</span>
+            <span>Jazigo Municipal</span>
+        </a>
+    </nav>
+</div>
+{% endblock sidebar_links %}

@@ -7,6 +7,22 @@ from django.db.models import Sum, Count
 from .models import Solicitacao, Atendimento
 from .forms import SolicitacaoForm, AtendimentoForm
 
+class DashboardView(LoginRequiredMixin, TemplateView):
+    template_name = 'gestao/dashboard.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['solicitacoes_count'] = Solicitacao.objects.count()
+        context['atendimentos_count'] = Atendimento.objects.count()
+        
+        horas_trator = Atendimento.objects.filter(solicitacao__equipamento='TRATOR').aggregate(total=Sum('horas_trabalhadas'))['total'] or 0
+        horas_retro = Atendimento.objects.filter(solicitacao__equipamento='RETROESCAVADEIRA').aggregate(total=Sum('horas_trabalhadas'))['total'] or 0
+        
+        context['horas_trator'] = horas_trator
+        context['horas_retro'] = horas_retro
+        context['recent_solicitacoes'] = Solicitacao.objects.select_related('atendimento').order_by('-data_solicitacao', '-id')[:5]
+        return context
+
 class SolicitacaoListView(LoginRequiredMixin, ListView):
     model = Solicitacao
     template_name = 'gestao/solicitacao_list.html'
